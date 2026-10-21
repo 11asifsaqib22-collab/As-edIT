@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>AS Edit</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0b1220;--panel:#141f32;--glass:rgba(255,255,255,.065);--border:rgba(255,255,255,.10);--text:#fff;--muted:#aab8cc;--accent:#a8caff;--gold:#ffe0ad}
+html,body{width:100%;height:100%;overflow:hidden}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.app{height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.hero{height:31%;min-height:175px;max-height:235px;flex-shrink:0;position:relative;overflow:hidden;padding:15px 17px;background:linear-gradient(145deg,#1d3556,#61758c 58%,#b98270)}
+.hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-35px;top:-65px;background:#ffe0ad22;box-shadow:0 0 65px #ffe0ad19}
+.sun{position:absolute;right:16%;top:25%;width:45px;height:45px;border-radius:50%;background:var(--gold);box-shadow:0 0 35px #ffe0ad66}
+.mountain{position:absolute;bottom:0;width:0;height:0;border-left:34vw solid transparent;border-right:34vw solid transparent;border-bottom:105px solid #263c58}
+.mountain.one{left:-25%}.mountain.two{left:27%;border-bottom-color:#354b66;border-bottom-width:75px}.mountain.three{right:-28%;border-bottom-color:#1a2b43;border-bottom-width:120px}
+.hero-content{position:relative;z-index:2;height:100%}
+.topbar{display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-logo{width:39px;height:39px;display:grid;place-items:center;border:1px solid #ffffff40;border-radius:12px;background:#ffffff20;font-weight:900}
+.brand-name{font-size:19px;font-weight:800}.brand-subtitle{margin-top:3px;font-size:9px;letter-spacing:1.5px}
+.search-btn{width:39px;height:39px;border:1px solid #ffffff40;border-radius:12px;background:#ffffff20;font-size:24px}
+.hero-title{margin-top:17px;font-size:clamp(29px,8vw,39px);line-height:1.02;letter-spacing:-1.3px;font-weight:900}
+.hero-title span{color:var(--gold)}.hero-description{margin-top:8px;max-width:230px;font-size:11px;line-height:1.4;color:#f3f4fa}
+.main{flex:1;min-height:0;overflow:hidden;padding:12px 14px 8px;display:flex;flex-direction:column;gap:12px}
+.section-title{display:flex;align-items:center;justify-content:space-between;font-size:16px;font-weight:800;flex-shrink:0}
+.section-title button{border:0;background:none;color:var(--accent);font-size:12px}
+.edit-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;flex-shrink:0}
+.edit-card{height:clamp(90px,14vh,112px);padding:10px;text-align:left;border:1px solid var(--border);border-radius:16px;background:var(--panel)}
+.card-icon{width:32px;height:32px;display:grid;place-items:center;margin-bottom:6px;border-radius:10px;background:#a8caff19;font-size:20px;color:var(--accent)}
+.edit-card h3{font-size:13px;margin-bottom:4px}.edit-card p{color:var(--muted);font-size:10px;line-height:1.35}
+.quick-grid{display:grid;grid-template-columns:1fr;flex-shrink:0}
+.quick-card{display:flex;align-items:center;gap:12px;width:100%;padding:11px 13px;text-align:left;border:1px solid var(--border);border-radius:14px;background:var(--panel)}
+.quick-icon{font-size:23px;color:var(--accent)}.quick-card strong{font-size:13px}
+.quick-card small{display:block;margin-top:3px;color:var(--muted);font-size:10px}
+.projects-section{min-height:0;flex:1;overflow:hidden;display:flex;flex-direction:column}
+.project-grid{min-height:0;overflow:auto;overscroll-behavior:contain;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:9px;margin-top:9px;padding-bottom:4px}
+.project-card{min-width:0;overflow:hidden;border:1px solid var(--border);border-radius:13px;background:var(--panel)}
+.project-preview{height:65px;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,#344b6c,#18253b);font-size:24px}
+.project-preview img{width:100%;height:100%;object-fit:cover}
+.project-info{padding:7px}.project-info h3{font-size:11px;overflow-wrap:anywhere}.project-info p{margin-top:4px;color:var(--muted);font-size:9px}
+.project-actions{display:flex;gap:5px;padding:0 7px 7px}.project-actions button{flex:1;padding:6px 2px;border-radius:7px;border:1px solid var(--border);background:#ffffff0b;font-size:10px}.project-actions .delete{color:#ffaaa9}
+.empty-message{grid-column:1/-1;padding:18px 8px;text-align:center;color:var(--muted);font-size:11px;line-height:1.6}
+.bottom-nav{height:62px;flex-shrink:0;display:grid;grid-template-columns:repeat(4,1fr);padding:5px 8px max(5px,env(safe-area-inset-bottom));background:#111c31;border-top:1px solid var(--border)}
+.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:0;border-radius:11px;background:transparent;color:#a5b2c8;font-size:10px}
+.nav-icon{font-size:19px}.nav-item.active{color:var(--accent);background:#a8caff12}
+.notice{position:fixed;z-index:400;left:50%;bottom:72px;transform:translateX(-50%);max-width:90%;padding:10px 14px;border-radius:10px;background:#e4edff;color:#17243b;font-size:12px;display:none;text-align:center}
+.notice.show{display:block}
+.music-page{position:fixed;z-index:200;inset:0;background:var(--bg);display:none;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 14px max(12px,env(safe-area-inset-bottom))}
+.music-page.show{display:flex}
+.music-header{display:flex;align-items:center;gap:12px;flex-shrink:0;margin-bottom:20px}
+.music-back{width:42px;height:42px;border:1px solid var(--border);border-radius:12px;background:var(--panel);font-size:23px}
+.music-heading{font-size:21px;font-weight:800}.music-subtitle{font-size:11px;color:var(--muted);margin-top:4px}
+.music-search-form{display:flex;gap:8px;flex-shrink:0}
+.music-search-input{min-width:0;flex:1;height:48px;border:1px solid var(--border);border-radius:13px;background:var(--panel);padding:0 13px;outline:none;font-size:14px}
+.music-search-input:focus{border-color:var(--accent)}
+.music-search-submit{width:52px;border:0;border-radius:13px;background:#42679e;font-size:22px}
+.music-categories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px;flex-shrink:0}
+.music-category{padding:12px 8px;border:1px solid var(--border);border-radius:12px;background:var(--panel);font-size:12px}
+.music-category:active{background:#263c58}
+.music-results{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;margin-top:15px}
+.music-status{text-align:center;color:var(--muted);font-size:12px;padding:25px 10px;line-height:1.7}
+.music-result{display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);align-items:center}
+.music-result img{width:64px;height:64px;border-radius:9px;object-fit:cover;background:var(--panel);flex-shrink:0}
+.music-result-info{flex:1;min-width:0}
+.music-result-info strong{display:block;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.music-result-info small{display:block;color:var(--muted);font-size:11px;margin-top:5px;line-height:1.4}
+.music-result a{color:var(--accent);font-size:11px;display:inline-block;margin-top:7px;text-decoration:none}
+
+/* AS Edit editing screen */
+.work-page{position:fixed;inset:0;z-index:300;display:none;flex-direction:column;background:#080808;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);overflow:hidden}
+.work-page.show{display:flex}
+.edit-topbar{height:46px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 8px;background:#101010}
+.top-left-AS,.top-right-AS{display:flex;align-items:center;gap:8px;min-width:0}
+.edit-topbar button{border:0;background:transparent;color:#fff;font-size:20px;white-space:nowrap;padding:7px}
+.edit-topbar .ai-uhd{font-size:11px;background:#292929;padding:8px 9px;border-radius:8px}
+.edit-topbar .edit-export{font-size:12px;font-weight:bold;padding:8px 11px;background:#1685ff;border-radius:7px}
+.edit-preview-AS{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000;position:relative;touch-action:none}
+.edit-preview-AS img,.edit-preview-AS video{display:block;width:100%;height:100%;object-fit:contain;transition:transform 0.1s ease;transform-origin:center}
+.preview-placeholder-AS{font-size:12px;color:#777}
+.edit-controls-AS{height:42px;flex-shrink:0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;padding:0 9px;background:#101010}
+.controls-left-AS,.controls-center-AS,.controls-right-AS{display:flex;align-items:center;gap:5px;min-width:0}
+.controls-left-AS{justify-content:flex-start}.controls-center-AS{justify-content:center}.controls-right-AS{justify-content:flex-end}
+.small-control-AS{border:1px solid #333;border-radius:6px;background:#202020;color:#ddd;font-size:11px;padding:6px 8px;white-space:nowrap}
+.play-main-AS{width:38px;height:31px;flex-shrink:0;border:0;border-radius:8px;background:#292929;color:white;font-size:16px}
+.keyframe-AS{display:none}.work-page.video-selected-AS .keyframe-AS{display:inline-block}
+.timeline-timebar-AS{height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 9px;background:#111;color:#aaa;font-size:10px}
+.edit-timeline-AS{height:102px;flex-shrink:0;overflow:hidden;background:#111;border-top:1px solid #292929;position:relative}
+.timeline-ruler-AS{height:23px;display:flex;align-items:center;justify-content:space-around;color:#888;font-size:9px;border-bottom:1px solid #292929}
+.timeline-track-scroll-AS{height:78px;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;overscroll-behavior-x:contain}
+.timeline-tracks-AS{position:relative;width:max(100%,480px);min-width:480px;height:100%;background:repeating-linear-gradient(90deg,#151515 0,#151515 39px,#222 40px)}
+.track-row-AS{height:26px;display:flex;align-items:center;padding:2px 5px;border-bottom:1px solid #292929;overflow:hidden}
+.track-clip-AS{height:21px;min-width:75px;max-width:90%;overflow:hidden;display:flex;align-items:center;padding:0 7px;background:#244b73;border:1px solid #367fc0;border-radius:5px;font-size:10px;white-space:nowrap;cursor:pointer}
+.track-clip-AS.selected-clip{border:2px solid #fff;background:#1c5fa3}
+.playhead-AS{position:absolute;z-index:5;top:0;bottom:0;left:0;width:2px;background:#fff;pointer-events:none}
+.playhead-AS:before{content:"";position:absolute;top:0;left:-4px;width:10px;height:10px;background:#fff;border-radius:2px}
+
+/* CapCut Style Timeline Actions Bar */
+.capcut-action-bar{background:#111;padding:8px 12px;display:flex;align-items:center;gap:15px;border-top:1px solid #222;flex-shrink:0}
+.cc-mute-btn{display:flex;flex-direction:column;align-items:center;background:none;border:none;color:#bbb;font-size:9px;gap:3px;cursor:pointer}
+.cc-mute-btn span{font-size:18px}
+.cc-cover-box{width:42px;height:42px;background:#2a2322;border:1px solid #443;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#e8a87c;font-size:9px;gap:2px;cursor:pointer}
+.cc-cover-box span{font-size:15px}
+.cc-right-actions{display:flex;flex-direction:column;gap:5px;flex:1}
+.cc-row-item{display:flex;align-items:center;gap:10px;color:#ccc;font-size:11px;cursor:pointer;background:none;border:none;text-align:left}
+.cc-row-item .cc-icon-btn{width:22px;height:22px;background:#222;border:1px solid #444;border-radius:4px;display:grid;place-items:center;font-size:12px;color:#fff}
+.cc-add-btn{width:32px;height:32px;background:#222;border:1px solid #444;border-radius:6px;color:#fff;font-size:18px;display:grid;place-items:center;cursor:pointer;margin-left:auto}
+
+.edit-bottom-AS{height:59px;flex-shrink:0;display:flex;justify-content:flex-start;gap:0;overflow-x:auto;overflow-y:hidden;padding:0 4px;background:#111;border-top:1px solid #292929;scrollbar-width:thin;scrollbar-color:#444 #111;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.edit-bottom-AS button{position:relative;flex:0 0 64px;min-width:64px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#aaa;font-size:9px;white-space:normal;border:0;background:transparent}
+.edit-bottom-AS button span{font-size:18px}
+.edit-bottom-AS button.selected-AS{color:#1685ff}
+.edit-bottom-AS button.selected-AS:after{content:"";position:absolute;bottom:0;width:27px;height:3px;background:#1685ff;border-radius:3px}
+
+/* Clip Selected Dynamic Bottom Tools Bar (Replaces bottom bar completely when clip is selected) */
+.clip-selected-tools{height:59px;background:#111;border-top:1px solid #292929;display:none;align-items:center;gap:12px;padding:0 10px;flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+.clip-selected-tools::-webkit-scrollbar{display:none}
+.clip-selected-tools.show{display:flex}
+.cst-btn{background:none;border:none;color:#aaa;font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;white-space:nowrap;flex:0 0 auto;padding:0 6px;height:100%}
+.cst-btn span{font-size:16px;color:var(--accent)}
+.cst-btn:hover{color:#fff}
+
+/* AI UHD Quality Settings Popup Modal */
+.uhd-modal{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.7);display:none;align-items:flex-end;justify-content:center}
+.uhd-modal.show{display:flex}
+.uhd-content{width:100%;max-width:500px;background:#141b2b;border-top-left-radius:20px;border-top-right-radius:20px;padding:20px;color:#fff;max-height:85vh;overflow-y:auto}
+.uhd-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;font-size:16px;font-weight:bold}
+.uhd-toggle-box{background:#1c2d46;border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.uhd-toggle-text strong{display:block;font-size:13px;color:#a8caff}
+.uhd-toggle-text small{color:#aab8cc;font-size:10px}
+.switch{position:relative;display:inline-block;width:44px;height:24px}
+.switch input{opacity:0;width:0;height:0}
+.slider-switch{position:absolute;cursor:pointer;inset:0;background-color:#333;transition:.3s;border-radius:24px}
+.slider-switch:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background-color:white;transition:.3s;border-radius:50%}
+input:checked+.slider-switch{background-color:#1685ff}
+input:checked+.slider-switch:before{transform:translateX(20px)}
+
+.uhd-control-group{margin-bottom:16px}
+.uhd-control-group label{display:flex;justify-content:space-between;font-size:12px;color:#aab8cc;margin-bottom:6px}
+.uhd-control-group input[type=range]{width:100%;accent-color:#1685ff}
+.uhd-steps{display:flex;justify-content:space-between;font-size:9px;color:#888;margin-top:4px}
+.uhd-apply-btn{width:100%;background:#1685ff;color:#fff;border:none;border-radius:12px;padding:12px;font-weight:bold;font-size:14px;margin-top:10px;cursor:pointer}
+
+/* CapCut Style Export & Success Page */
+.export-page{position:fixed;inset:0;z-index:500;background:#141b2b;display:none;flex-direction:column;overflow-y:auto;padding:20px;color:#fff}
+.export-page.show{display:flex}
+.export-top-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.export-top-header button{background:none;border:none;color:#fff;font-size:18px;cursor:pointer}
+.export-top-header span{font-size:16px;font-weight:bold}
+
+.export-progress-box{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center}
+.export-heading{font-size:17px;font-weight:bold;margin-bottom:20px}
+.export-progress-bar-wrap{width:100%;max-width:300px;height:6px;background:#263852;border-radius:3px;overflow:hidden;margin-bottom:12px}
+.export-progress-line{width:0%;height:100%;background:#a8caff;transition:width 0.1s linear}
+.export-percentage{font-size:24px;font-weight:bold}
+
+.export-success-box{display:none;flex-direction:column;align-items:center;width:100%}
+.export-video-card{width:100%;max-width:320px;height:190px;background:#0d1522;border-radius:14px;overflow:hidden;position:relative;display:grid;place-items:center;margin-bottom:18px;border:1px solid var(--border)}
+.export-video-card video, .export-video-card img{width:100%;height:100%;object-fit:cover}
+.export-play-icon{position:absolute;width:40px;height:40px;background:rgba(0,0,0,0.5);border-radius:50%;display:grid;place-items:center;font-size:16px;color:#fff}
+
+.share-tiktok-main-btn{width:100%;max-width:320px;background:#fff;color:#000;border:none;border-radius:30px;padding:13px;font-weight:bold;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:18px;cursor:pointer}
+.share-socials-row{display:flex;justify-content:space-between;width:100%;max-width:320px;margin-bottom:24px}
+.social-item{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;color:#aab8cc;font-size:10px;cursor:pointer}
+.social-circle{width:42px;height:42px;background:#1c2d46;border-radius:50%;display:grid;place-items:center;font-size:18px;color:#fff}
+
+.quick-actions-title{font-size:14px;font-weight:bold;margin-bottom:10px;width:100%;max-width:320px;text-align:left}
+.quick-actions-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:320px;margin-bottom:20px}
+.qa-card{background:#1c2d46;border:1px solid var(--border);border-radius:12px;padding:12px 5px;display:flex;flex-direction:column;align-items:center;gap:6px;color:#fff;font-size:10px;cursor:pointer;text-align:center}
+.qa-card span{font-size:18px;color:var(--accent)}
+
+.ai-banner-card{width:100%;max-width:320px;background:linear-gradient(135deg,#233756,#142033);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center;text-align:left;cursor:pointer;margin-bottom:20px}
+.ai-banner-text strong{display:block;font-size:12px;margin-bottom:3px}
+.ai-banner-text small{color:#aab8cc;font-size:9px}
+
+@media(max-height:650px){
+ .edit-topbar{height:39px}.edit-controls-AS{height:36px}.edit-timeline-AS{height:80px}
+ .timeline-track-scroll-AS{height:56px}.edit-bottom-AS{height:46px}
+ .edit-bottom-AS button span{font-size:15px}.small-control-AS{padding:5px 6px;font-size:10px}
+}
+@media(max-width:360px){
+ .edit-topbar{padding:0 4px}.top-left-AS,.top-right-AS{gap:3px}
+ .edit-topbar button{padding:6px;font-size:18px}.edit-topbar .edit-export{font-size:11px;padding:7px 8px}
+ .edit-topbar .ai-uhd{font-size:10px;padding:7px}.edit-controls-AS{padding:0 5px;gap:3px}
+ .controls-left-AS,.controls-right-AS{gap:3px}.small-control-AS{font-size:9px;padding:5px}
+ .play-main-AS{width:32px}
+}
+@media(min-width:700px){
+ .work-page{max-width:500px;left:50%;transform:translateX(-50%);border-left:1px solid #333;border-right:1px solid #333}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+<section class="hero">
+ <div class="sun"></div><div class="mountain one"></div><div class="mountain two"></div><div class="mountain three"></div>
+ <div class="hero-content">
+  <div class="topbar">
+   <div class="brand"><div class="brand-logo">AS</div><div><div class="brand-name">AS Edit</div><div class="brand-subtitle">YOUR CREATIVE STUDIO</div></div></div>
+   <button class="search-btn" data-action="search" aria-label="Search online music">⌕</button>
+  </div>
+  <h1 class="hero-title">Create. Edit. <span>Inspire.</span></h1>
+  <p class="hero-description">Bring your ideas to life with your personal editing studio.</p>
+ </div>
+</section>
+<main class="main">
+ <div class="section-title"><span>Start Creating</span></div>
+ <section class="edit-cards">
+  <button class="edit-card" data-action="photo"><div class="card-icon">▧</div><h3>Photo Edit</h3><p>Edit and adjust your photos.</p></button>
+  <button class="edit-card" data-action="video"><div class="card-icon">▷</div><h3>Video Edit</h3><p>Open and preview your videos.</p></button>
+ </section>
+ <div class="section-title"><span>Quick Access</span></div>
+ <section class="quick-grid"><button class="quick-card" data-action="history"><span class="quick-icon">◷</span><span><strong>History</strong><small>View your recent editing activity</small></span></button></section>
+ <section class="projects-section">
+  <div class="section-title"><span id="projects-heading">Saved Projects</span><button data-action="projects">See All</button></div>
+  <div class="project-grid" id="project-grid"></div>
+ </section>
+</main>
+<nav class="bottom-nav">
+ <button class="nav-item active" data-action="edit"><span class="nav-icon">✂</span><span>Edit</span></button>
+ <button class="nav-item" data-action="templates"><span class="nav-icon">✧</span><span>Template</span></button>
+ <button class="nav-item" data-action="projects"><span class="nav-icon">▱</span><span>Projects</span></button>
+ <button class="nav-item" data-action="me"><span class="nav-icon">◉</span><span>Me</span></button>
+</nav>
+</div>
+
+<section class="music-page" id="music-page">
+ <header class="music-header">
+  <button class="music-back" data-action="music-back" aria-label="Back">‹</button>
+  <div><div class="music-heading">Online Music Search</div><div class="music-subtitle">Search songs, naats and more</div></div>
+ </header>
+ <form class="music-search-form" id="music-search-form">
+  <input class="music-search-input" id="music-search-input" type="search" placeholder="Search song, Naat, artist..." autocomplete="off">
+  <button class="music-search-submit" type="submit" aria-label="Search">⌕</button>
+ </form>
+ <div class="music-categories">
+  <button class="music-category" data-action="search-category" data-query="popular songs">♫ Songs</button>
+  <button class="music-category" data-action="search-category" data-query="Naat">☪ Naat</button>
+  <button class="music-category" data-action="search-category" data-query="Qawwali">♪ Qawwali</button>
+  <button class="music-category" data-action="search-category" data-query="Islamic Nasheed">✧ Nasheed</button>
+ </div>
+ <div class="music-results" id="music-results"><div class="music-status">Search for music using the bar above.</div></div>
+</section>
+
+<!-- Main Editing Work Page -->
+<div class="work-page" id="work-page">
+ <div class="edit-topbar">
+  <div class="top-left-AS">
+   <button onclick="closeWorkPage()" aria-label="Close">×</button>
+  </div>
+  <div class="top-right-AS">
+   <button class="edit-export" id="work-export">Export</button>
+   <button class="ai-uhd" onclick="openUhdModal()" id="qualityAS">AI UHD ▾</button>
+  </div>
+  <input type="file" id="media-input-AS" accept="image/*,video/*" hidden>
+ </div>
+
+ <div class="edit-preview-AS" id="work-preview">
+  <span class="preview-placeholder-AS">Select a photo or video</span>
+ </div>
+
+ <div class="edit-controls-AS">
+  <div class="controls-left-AS">
+   <button class="small-control-AS" onclick="setRatioAS()">Ratio</button>
+   <button class="small-control-AS" onclick="toggleFullscreenAS()">⛶</button>
+  </div>
+  <div class="controls-center-AS">
+   <button class="play-main-AS" id="play-AS" onclick="togglePlayAS()">▶</button>
+  </div>
+  <div class="controls-right-AS">
+   <button class="small-control-AS keyframe-AS" onclick="addKeyframeAS()">◇+</button>
+   <button class="small-control-AS" onclick="undoAS()">↶</button>
+   <button class="small-control-AS" onclick="redoAS()">↷</button>
+  </div>
+ </div>
+
+ <div class="timeline-timebar-AS">
+  <span id="current-AS">00:00</span>
+  <span id="duration-AS">00:00</span>
+ </div>
+
+ <div class="edit-timeline-AS">
+  <div class="timeline-ruler-AS">
+   <span>00:00</span><span>00:05</span><span>00:10</span><span>00:15</span><span>00:20</span>
+  </div>
+  <div class="timeline-track-scroll-AS" id="timeline-scroll-AS">
+   <div class="timeline-tracks-AS" id="timeline-tracks-AS">
+    <div class="playhead-AS" id="playhead-AS"></div>
+    <div class="track-row-AS">
+     <div class="track-clip-AS" id="clip-name-AS" onclick="toggleClipSelection(this)">Video clip</div>
+    </div>
+    <div class="track-row-AS" id="audio-track-AS"></div>
+    <div class="track-row-AS" id="text-track-AS"></div>
+   </div>
+  </div>
+ </div>
+
+ <!-- Dynamic Clip Selected Tools Bar (Replaces bottom bar completely when clip is selected) -->
+ <div class="clip-selected-tools" id="clip-selected-tools">
+  <button class="cst-btn" onclick="clipAction('Split')"><span>✂</span>Split</button>
+  <button class="cst-btn" onclick="clipAction('Volume')"><span>🔊</span>Volume</button>
+  <button class="cst-btn" onclick="clipAction('Animations')"><span>✨</span>Animations</button>
+  <button class="cst-btn" onclick="clipAction('Effects')"><span>✧</span>Effects</button>
+  <button class="cst-btn" onclick="clipAction('Delete')"><span>🗑</span>Delete</button>
+  <button class="cst-btn" onclick="clipAction('Speed')"><span>⚡</span>Speed</button>
+  <button class="cst-btn" onclick="clipAction('Beats')"><span>🎵</span>Beats</button>
+  <button class="cst-btn" onclick="clipAction('AI Video')"><span>🤖</span>AI video</button>
+  <button class="cst-btn" onclick="clipAction('Crop')"><span>🔲</span>Crop</button>
+  <button class="cst-btn" onclick="clipAction('Duplicate')"><span>📋</span>Duplicate</button>
+  <button class="cst-btn" onclick="clipAction('Replace')"><span>🔄</span>Replace</button>
+  <button class="cst-btn" onclick="triggerFileInput()"><span>📑</span>Overlay</button>
+  <button class="cst-btn" onclick="clipAction('Adjust')"><span>🎚</span>Adjust</button>
+  <button class="cst-btn" onclick="clipAction('Filters')"><span>🎨</span>Filters</button>
+  <button class="cst-btn" onclick="clipAction('Retouch')"><span>✨</span>Retouch</button>
+  <button class="cst-btn" onclick="clipAction('Video Quality')"><span>HD</span>Video quality</button>
+  <button class="cst-btn" onclick="clipAction('Remove BG')"><span>👤</span>Remove BG</button>
+  <button class="cst-btn" onclick="clipAction('AI Remove')"><span>🪄</span>AI remove</button>
+  <button class="cst-btn" onclick="clipAction('AI Expand')"><span>↔</span>AI expand</button>
+  <button class="cst-btn" onclick="clipAction('AI Remix')"><span>🎨</span>AI remix</button>
+  <button class="cst-btn" onclick="clipAction('AI Extend')"><span>➕</span>AI extend</button>
+  <button class="cst-btn" onclick="clipAction('Eye Contact')"><span>👁</span>Eye contact</button>
+  <button class="cst-btn" onclick="clipAction('Relight')"><span>💡</span>Relight</button>
+  <button class="cst-btn" onclick="clipAction('Opacity')"><span>🔅</span>Opacity</button>
+  <button class="cst-btn" onclick="clipAction('Motion Blur')"><span>🌀</span>Motion blur</button>
+  <button class="cst-btn" onclick="clipAction('Lip Sync')"><span>🗣</span>Lip sync</button>
+  <button class="cst-btn" onclick="clipAction('Transform')"><span>📐</span>Transform</button>
+  <button class="cst-btn" onclick="clipAction('Auto Reframe')"><span>📱</span>Auto reframe</button>
+  <button class="cst-btn" onclick="clipAction('Stabilize')"><span>📈</span>Stabilize</button>
+  <button class="cst-btn" onclick="clipAction('Extract Audio')"><span>🎵</span>Extract audio</button>
+  <button class="cst-btn" onclick="clipAction('Isolate Voice')"><span>🎙</span>Isolate voice</button>
+  <button class="cst-btn" onclick="clipAction('Reduce Noise')"><span>🔇</span>Reduce noise</button>
+  <button class="cst-btn" onclick="clipAction('Audio Effects')"><span>🎶</span>Audio effects</button>
+  <button class="cst-btn" onclick="clipAction('Enhance Voice')"><span>🔊</span>Enhance voice</button>
+  <button class="cst-btn" onclick="clipAction('Video Translator')"><span>🌐</span>Video translator</button>
+  <button class="cst-btn" onclick="clipAction('Freeze')"><span>❄</span>Freeze</button>
+  <button class="cst-btn" onclick="clipAction('Reverse')"><span>⏪</span>Reverse</button>
+  <button class="cst-btn" onclick="clipAction('Mask')"><span>🛡</span>Mask</button>
+  <button class="cst-btn" onclick="clipAction('Link')"><span>🔗</span>Link</button>
+ </div>
+
+ <!-- CapCut Style Interface Below Timeline -->
+ <div class="capcut-action-bar" id="capcut-action-bar">
+  <button class="cc-mute-btn" id="mute-clip-AS" onclick="toggleMuteAS()">
+   <span>🔊</span>
+   Mute clip
+  </button>
+  
+  <div class="cc-cover-box" onclick="showMessageAS('Cover selected')">
+   <span>✎</span>
+   Cover
+  </div>
+
+  <div class="cc-right-actions">
+   <button class="cc-row-item" onclick="addAudioAS()">
+    <div class="cc-icon-btn">♫</div>
+    + Add audio
+   </button>
+   <button class="cc-row-item" onclick="addTextAS()">
+    <div class="cc-icon-btn">T</div>
+    + Add text
+   </button>
+  </div>
+
+  <button class="cc-add-btn" onclick="triggerFileInput()">＋</button>
+ </div>
+
+ <div class="edit-bottom-AS" id="edit-bottom-bar">
+  <button class="selected-AS" onclick="selectEditToolAS(this,'Edit')"><span>✂</span>Edit</button>
+  <button onclick="selectEditToolAS(this,'Audio')"><span>♫</span>Audio</button>
+  <button onclick="selectEditToolAS(this,'Effects')"><span>✧</span>Effects</button>
+  <button onclick="selectEditToolAS(this,'Overlay')"><span>▧</span>Overlay</button>
+  <button onclick="selectEditToolAS(this,'Captions')"><span>▤</span>Captions</button>
+  <button onclick="selectEditToolAS(this,'Filters')"><span>◐</span>Filters</button>
+  <button onclick="selectEditToolAS(this,'Adjust')"><span>☷</span>Adjust</button>
+  <button onclick="selectEditToolAS(this,'Stickers')"><span>☺</span>Stickers</button>
+  <button onclick="selectEditToolAS(this,'Generate Media')"><span>✧</span>Generate Media</button>
+  <button onclick="selectEditToolAS(this,'AI Avatar')"><span>◉</span>AI Avatar</button>
+  <button onclick="selectEditToolAS(this,'Aspect Ratio')"><span>▣</span>Aspect Ratio</button>
+  <button onclick="selectEditToolAS(this,'Background')"><span>▧</span>Background</button>
+ </div>
+</div>
+
+<!-- AI UHD / Quality Settings Modal -->
+<div class="uhd-modal" id="uhd-modal">
+ <div class="uhd-content">
+  <div class="uhd-header">
+   <span>Video Quality Settings</span>
+   <button onclick="closeUhdModal()" style="background:none;border:none;color:#fff;font-size:20px;">✕</button>
+  </div>
+  
+  <div class="uhd-toggle-box">
+   <div class="uhd-toggle-text">
+    <strong>AI Ultra HD 💎</strong>
+    <small>Make video clearer & smoother with AI.</small>
+   </div>
+   <label class="switch">
+    <input type="checkbox" id="ai-uhd-toggle" checked>
+    <span class="slider-switch"></span>
+   </label>
+  </div>
+
+  <div class="uhd-control-group">
+   <label><span>Resolution</span> <span id="val-res">1080p</span></label>
+   <input type="range" id="slider-res" min="1" max="5" value="4" oninput="updateUhdLabels()">
+   <div class="uhd-steps"><span>480p</span><span>540p</span><span>720p</span><span>1080p</span><span>2K/4K</span></div>
+  </div>
+
+  <div class="uhd-control-group">
+   <label><span>Frame rate</span> <span id="val-fps">30 fps</span></label>
+   <input type="range" id="slider-fps" min="1" max="5" value="3" oninput="updateUhdLabels()">
+   <div class="uhd-steps"><span>24</span><span>25</span><span>30</span><span>50</span><span>60</span></div>
+  </div>
+
+  <div class="uhd-control-group">
+   <label><span>Bitrate (Mbps)</span> <span id="val-bit">10 Mbps</span></label>
+   <input type="range" id="slider-bit" min="1" max="5" value="2" oninput="updateUhdLabels()">
+   <div class="uhd-steps"><span>5</span><span>10</span><span>20</span><span>50</span><span>100</span></div>
+  </div>
+
+  <button class="uhd-apply-btn" onclick="applyUhdSettings()">Apply Quality Settings</button>
+ </div>
+</div>
+
+<!-- CapCut Style Export & Success Page -->
+<div class="export-page" id="export-page">
+ <div class="export-top-header">
+  <button onclick="closeExportPage()">‹</button>
+  <span id="export-header-title">Exporting</span>
+  <button id="done-header-btn" onclick="closeExportPage()" style="display:none; font-weight:bold;">Done</button>
+ </div>
+ 
+ <div class="export-progress-box" id="export-progress-box">
+  <div class="export-heading" id="export-heading-text">Exporting...</div>
+  <div class="export-progress-bar-wrap">
+   <div class="export-progress-line" id="export-progress-line"></div>
+  </div>
+  <div class="export-percentage" id="export-percentage">0%</div>
+ </div>
+
+ <div class="export-success-box" id="export-success-box">
+  <div class="export-video-card" id="export-success-preview">
+   <div class="export-play-icon">▶</div>
+  </div>
+
+  <button class="share-tiktok-main-btn" onclick="shareToPlatform('TikTok')">
+   <span style="font-size:18px;">🎵</span> Share to TikTok
+  </button>
+
+  <div class="share-socials-row">
+   <button class="social-item" onclick="shareToPlatform('YouTube')"><div class="social-circle">▶</div>YouTube</button>
+   <button class="social-item" onclick="shareToPlatform('WhatsApp')"><div class="social-circle">💬</div>WhatsApp</button>
+   <button class="social-item" onclick="shareToPlatform('Facebook')"><div class="social-circle">f</div>Facebook</button>
+   <button class="social-item" onclick="shareToPlatform('Instagram')"><div class="social-circle">📷</div>Instagram</button>
+   <button class="social-item" onclick="shareToPlatform('Stories')"><div class="social-circle">⭕</div>Stories</button>
+  </div>
+
+  <div class="quick-actions-title">Quick actions</div>
+  <div class="quick-actions-grid">
+   <button class="qa-card" onclick="quickActionNewProject()"><span>＋</span>New project</button>
+   <button class="qa-card" onclick="quickActionExportOpt()"><span>📤</span>Export options</button>
+   <button class="qa-card" onclick="quickActionQuality()"><span>HD</span>Video quality</button>
+   <button class="qa-card" onclick="quickActionEditPhoto()"><span>🖼</span>Edit photo</button>
+  </div>
+
+  <div class="ai-banner-card" onclick="notify('AI Extend feature opened successfully!')">
+   <div class="ai-banner-text">
+    <strong>Make it longer?</strong>
+    <small>Extend your video with AI</small>
+   </div>
+   <span style="font-size:20px; color:var(--accent);">➔</span>
+  </div>
+ </div>
+</div>
+
+<div class="notice" id="notice"></div>
+
+<!-- Hidden File Inputs -->
+<input type="file" id="general-media-input" accept="image/*,video/*" hidden>
+
+<script>
+const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
+
+let projects=[],historyItems=[],currentURL=null,currentFile=null,currentType="photo",showingAll=false;
+let qualityLevelAS="High",audioURLAS=null,addedAudioAS=null,mutedAS=false,ratioIndexAS=0;
+let undoStackAS=[],redoStackAS=[];
+let currentZoom=1, initialDistance=0;
+
+function readStore(key,fallback){
+ try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback))}
+ catch(e){return fallback}
+}
+
+projects=readStore("asEditProjects",[]);
+historyItems=readStore("asEditHistory",[]);
+projects=projects.filter(p=>p.type!=="Photo"||!p.preview||!p.preview.startsWith("blob:"));
+
+function notify(message){
+ const n=$("#notice");
+ n.textContent=message;
+ n.classList.add("show");
+ clearTimeout(window.noticeTimer);
+ window.noticeTimer=setTimeout(()=>n.classList.remove("show"),2300);
+}
+
+function saveData(){
+ try{
+  localStorage.setItem("asEditProjects",JSON.stringify(projects));
+  localStorage.setItem("asEditHistory",JSON.stringify(historyItems));
+  return true;
+ }catch(e){
+  notify("Storage is full. Try a smaller image.");
+  return false;
+ }
+}
+
+function addHistory(name,type){
+ historyItems.unshift({name,type,date:new Date().toLocaleString()});
+ historyItems=historyItems.slice(0,50);
+ try{localStorage.setItem("asEditHistory",JSON.stringify(historyItems))}catch(e){}
+}
+
+function renderProjects(list=projects){
+ const grid=$("#project-grid");
+ grid.innerHTML="";
+ if(!list.length){
+  grid.innerHTML='<div class="empty-message">No saved projects yet.<br>Choose a photo or video to start.</div>';
+  return;
+ }
+ (showingAll?list:list.slice(0,4)).forEach(project=>{
+  const card=document.createElement("div");
+  card.className="project-card";
+  const preview=document.createElement("div");
+  preview.className="project-preview";
+  if(project.type==="Photo"&&project.preview){
+   const img=document.createElement("img");
+   img.src=project.preview;
+   img.alt="Saved project";
+   preview.appendChild(img);
+  }else{
+   preview.textContent="▷";
+  }
+  const info=document.createElement("div");
+  info.className="project-info";
+  const title=document.createElement("h3");
+  title.textContent=project.name||"Untitled";
+  const type=document.createElement("p");
+  type.textContent=project.type+" · "+(project.date||"");
+  info.append(title,type);
+  const actions=document.createElement("div");
+  actions.className="project-actions";
+  const open=document.createElement("button");
+  open.textContent="Open";
+  open.onclick=()=>openProject(project);
+  const del=document.createElement("button");
+  del.textContent="Delete";
+  del.className="delete";
+  del.onclick=()=>deleteProject(project.id);
+  actions.append(open,del);
+  card.append(preview,info,actions);
+  grid.appendChild(card);
+ });
+}
+
+function openProject(project){
+ if(project.type==="Video"){
+  notify("Please select the video from your device again.");
+  triggerFileInput();
+  return;
+ }
+ if(!project.preview){
+  notify("This project has no saved image.");
+  return;
+ }
+ currentType="photo";
+ currentFile=null;
+ currentURL=project.preview;
+ openWorkPageDirect(project.preview, "Saved Project", "photo");
+}
+
+function deleteProject(id){
+ if(!confirm("Delete this saved project?"))return;
+ projects=projects.filter(p=>p.id!==id);
+ saveData();
+ renderProjects();
+ notify("Project deleted.");
+}
+
+function triggerFileInput(){
+ $("#general-media-input").click();
+}
+
+function openWorkPageDirect(url, name, type){
+ currentURL=url;
+ currentType=type;
+ mutedAS=false;
+ undoStackAS=[];
+ redoStackAS=[];
+ ratioIndexAS=0;
+ currentZoom=1;
+
+ const page=$("#work-page");
+ page.classList.toggle("video-selected-AS",type==="video");
+
+ const preview=$("#work-preview");
+ preview.innerHTML="";
+ preview.style.aspectRatio="";
+ preview.dataset.ratio="auto";
+
+ let media;
+ if(type==="video"){
+  media=document.createElement("video");
+  media.controls=false;
+  media.playsInline=true;
+  media.preload="metadata";
+  media.addEventListener("timeupdate",updateTimeAS);
+  media.addEventListener("loadedmetadata",updateTimeAS);
+  media.addEventListener("ended",()=>{$("#play-AS").textContent="▶"});
+ }else{
+  media=document.createElement("img");
+  media.alt="Selected photo";
+ }
+ media.src=currentURL;
+ media.style.transform=`scale(${currentZoom})`;
+ preview.appendChild(media);
+
+ preview.addEventListener('touchstart', e => {
+  if(e.touches.length === 2){
+   initialDistance = Math.hypot(
+    e.touches[0].clientX - e.touches[1].clientX,
+    e.touches[0].clientY - e.touches[1].clientY
+   );
+  }
+ });
+ preview.addEventListener('touchmove', e => {
+  if(e.touches.length === 2){
+   const currentDistance = Math.hypot(
+    e.touches[0].clientX - e.touches[1].clientX,
+    e.touches[0].clientY - e.touches[1].clientY
+   );
+   if(initialDistance > 0){
+    const factor = currentDistance / initialDistance;
+    currentZoom = Math.min(Math.max(1, currentZoom * (factor > 1 ? 1.03 : 0.97)), 4);
+    media.style.transform = `scale(${currentZoom})`;
+   }
+  }
+ });
+
+ $("#clip-name-AS").textContent=name;
+ $("#current-AS").textContent="00:00";
+ $("#duration-AS").textContent="00:00";
+ $("#play-AS").textContent="▶";
+ $("#playhead-AS").style.left="0%";
+ const muteBtn=$("#mute-clip-AS");
+ if(muteBtn) muteBtn.innerHTML=`<span>🔊</span>Mute clip`;
+ $("#audio-track-AS").innerHTML="";
+ $("#text-track-AS").innerHTML="";
+ $("#timeline-scroll-AS").scrollLeft=0;
+ $("#clip-selected-tools").classList.remove("show");
+ $("#edit-bottom-bar").style.display="flex";
+ $("#capcut-action-bar").style.display="flex";
+ $("#work-page").classList.add("show");
+}
+
+function closeWorkPage(){
+ const video=getVideoAS();
+ if(video)video.pause();
+ $("#play-AS").textContent="▶";
+ $("#work-page").classList.remove("show");
+}
+
+function toggleClipSelection(el){
+ el.classList.toggle("selected-clip");
+ const isSelected = el.classList.contains("selected-clip");
+ if(isSelected){
+  $("#clip-selected-tools").classList.add("show");
+  $("#edit-bottom-bar").style.display="none";
+  $("#capcut-action-bar").style.display="none";
+  notify("Video clip selected. Editing tools active.");
+ }else{
+  $("#clip-selected-tools").classList.remove("show");
+  $("#edit-bottom-bar").style.display="flex";
+  $("#capcut-action-bar").style.display="flex";
+ }
+}
+
+function clipAction(actionName){
+ notify(`Feature activated: ${actionName}`);
+}
+
+function openUhdModal(){
+ $("#uhd-modal").classList.add("show");
+}
+function closeUhdModal(){
+ $("#uhd-modal").classList.remove("show");
+}
+function updateUhdLabels(){
+ const resVal=["480p","540p","720p","1080p","2K/4K"][document.getElementById("slider-res").value - 1];
+ const fpsVal=["24 fps","25 fps","30 fps","50 fps","60 fps"][document.getElementById("slider-fps").value - 1];
+ const bitVal=["5 Mbps","10 Mbps","20 Mbps","50 Mbps","100 Mbps"][document.getElementById("slider-bit").value - 1];
+ 
+ document.getElementById("val-res").textContent=resVal;
+ document.getElementById("val-fps").textContent=fpsVal;
+ document.getElementById("val-bit").textContent=bitVal;
+}
+function applyUhdSettings(){
+ const res=$("#val-res").textContent;
+ const fps=$("#val-fps").textContent;
+ const aiEnabled=$("#ai-uhd-toggle").checked;
+ notify(`Quality updated: ${res}, ${fps} (AI UHD: ${aiEnabled?'ON':'OFF'})`);
+ closeUhdModal();
+}
+
+function showMessageAS(message){notify(message)}
+function getVideoAS(){return $("#work-preview").querySelector("video")}
+
+function togglePlayAS(){
+ const video=getVideoAS();
+ if(!video){notify("Choose a video first.");return}
+ if(video.paused){
+  video.play().then(()=>{$("#play-AS").textContent="Ⅱ"}).catch(()=>notify("Unable to play this video."));
+ }else{
+  video.pause();
+  $("#play-AS").textContent="▶";
+ }
+}
+
+function toggleMuteAS(){
+ saveUndoStateAS();
+ mutedAS=!mutedAS;
+ const video=getVideoAS();
+ if(video)video.muted=mutedAS;
+ const muteBtn=$("#mute-clip-AS");
+ if(muteBtn) muteBtn.innerHTML=`<span>${mutedAS?'🔇':'🔊'}</span>Mute clip`;
+}
+
+function addKeyframeAS(){
+ saveUndoStateAS();
+ notify("Keyframe added.");
+}
+
+function updateTimeAS(){
+ const video=getVideoAS();
+ if(!video)return;
+ const format=s=>{
+  if(!Number.isFinite(s))return "00:00";
+  const minutes=Math.floor(s/60).toString().padStart(2,"0");
+  const seconds=Math.floor(s%60).toString().padStart(2,"0");
+  return minutes+":"+seconds;
+ };
+ $("#current-AS").textContent=format(video.currentTime);
+ $("#duration-AS").textContent=format(video.duration);
+ if(video.duration)$("#playhead-AS").style.left=(video.currentTime/video.duration*100)+"%";
+}
+
+function addAudioAS(){
+ const input=document.createElement("input");
+ input.type="file";
+ input.accept="audio/*";
+ input.onchange=()=>{
+  const file=input.files[0];
+  if(!file)return;
+  if(audioURLAS)URL.revokeObjectURL(audioURLAS);
+  audioURLAS=URL.createObjectURL(file);
+  if(addedAudioAS)addedAudioAS.remove();
+  addedAudioAS=document.createElement("div");
+  addedAudioAS.className="track-clip-AS";
+  addedAudioAS.style.background="#244b42";
+  addedAudioAS.style.borderColor="#3a9e7d";
+  addedAudioAS.textContent=file.name;
+  $("#audio-track-AS").appendChild(addedAudioAS);
+  notify("Audio added to timeline.");
+ };
+ input.click();
+}
+
+function addTextAS(){
+ const text=prompt("Enter your text:");
+ if(!text)return;
+ const row=$("#text-track-AS");
+ const old=row.querySelector(".track-clip-AS");
+ if(old)old.remove();
+ const clip=document.createElement("div");
+ clip.className="track-clip-AS";
+ clip.style.background="#59452a";
+ clip.style.borderColor="#a67c39";
+ clip.textContent=text;
+ row.appendChild(clip);
+ notify("Text added to timeline.");
+}
+
+function selectEditToolAS(button,name){
+ $$(".edit-bottom-AS button").forEach(item=>item.classList.remove("selected-AS"));
+ button.classList.add("selected-AS");
+ if(name==="Audio")addAudioAS();
+ else if(name==="Overlay")triggerFileInput();
+ else if(name==="Aspect Ratio")setRatioAS();
+ else notify(name+" selected.");
+}
+
+function setRatioAS(){
+ saveUndoStateAS();
+ const preview=$("#work-preview");
+ const ratios=["auto","9 / 16","16 / 9","1 / 1"];
+ ratioIndexAS=(ratioIndexAS+1)%ratios.length;
+ const ratio=ratios[ratioIndexAS];
+ preview.dataset.ratio=ratio;
+ preview.style.aspectRatio=ratio==="auto"?"":ratio;
+ notify("Preview ratio: "+(ratio==="auto"?"Fit":ratio));
+}
+
+function toggleFullscreenAS(){
+ const page=$("#work-page");
+ if(!document.fullscreenElement){
+  if(page.requestFullscreen)page.requestFullscreen().catch(()=>notify("Fullscreen is not supported here."));
+  else notify("Fullscreen is not supported here.");
+ }else if(document.exitFullscreen)document.exitFullscreen();
+}
+
+$("#work-export").addEventListener("click",()=>{
+ if(!currentURL){
+  notify("Please choose a file first.");
+  return;
+ }
+ const exportPage=$("#export-page");
+ exportPage.classList.add("show");
+ 
+ const progressBox=$("#export-progress-box");
+ const successBox=$("#export-success-box");
+ const headerTitle=$("#export-header-title");
+ const doneHeaderBtn=$("#done-header-btn");
+ const line=$("#export-progress-line");
+ const percentage=$("#export-percentage");
+ const heading=$("#export-heading-text");
+
+ progressBox.style.display="flex";
+ successBox.style.display="none";
+ headerTitle.textContent="Exporting";
+ doneHeaderBtn.style.display="none";
+
+ line.style.width="0%";
+ percentage.textContent="0%";
+ heading.textContent="Exporting...";
+
+ let progress=0;
+ const interval=setInterval(()=>{
+  progress+=4;
+  if(progress<=100){
+   line.style.width=progress+"%";
+   percentage.textContent=progress+"%";
+  }
+  if(progress>=100){
+   clearInterval(interval);
+   
+   progressBox.style.display="none";
+   successBox.style.display="flex";
+   headerTitle.textContent="Saved to device";
+   doneHeaderBtn.style.display="block";
+
+   const previewCard=$("#export-success-preview");
+   previewCard.innerHTML='<div class="export-play-icon">▶</div>';
+   if(currentType==="video"){
+    const vid=document.createElement("video");
+    vid.src=currentURL;
+    vid.controls=false;
+    vid.muted=true;
+    previewCard.prepend(vid);
+   }else{
+    const img=document.createElement("img");
+    img.src=currentURL;
+    previewCard.prepend(img);
+   }
+
+   const link=document.createElement("a");
+   link.href=currentURL;
+   link.download=currentFile?currentFile.name:(currentType==="video"?"video_edited.mp4":"photo_edited.jpg");
+   document.body.appendChild(link);
+   link.click();
+   link.remove();
+  }
+ }, 50);
+});
+
+function closeExportPage(){
+ $("#export-page").classList.remove("show");
+ closeWorkPage();
+}
+
+function shareToPlatform(platform){
+ notify(`Sharing successfully to ${platform}!`);
+}
+
+function quickActionNewProject(){
+ closeExportPage();
+ triggerFileInput();
+}
+
+function quickActionExportOpt(){
+ notify("Export Options: Resolution 1080p, 30fps active.");
+}
+
+function quickActionQuality(){
+ closeExportPage();
+ openUhdModal();
+}
+
+function quickActionEditPhoto(){
+ closeExportPage();
+ if(currentURL) openWorkPageDirect(currentURL, "Edited Photo", "photo");
+}
+
+$("#general-media-input").addEventListener("change",event=>{
+ const file=event.target.files[0];
+ if(!file)return;
+ currentFile=file;
+ const type=file.type.startsWith("video/")?"video":"photo";
+ const url=URL.createObjectURL(file);
+ openWorkPageDirect(url, file.name, type);
+ event.target.value="";
+});
+
+document.addEventListener("click",e=>{
+ const btn=e.target.closest("[data-action]");
+ if(!btn)return;
+ const a=btn.dataset.action;
+ if(a==="photo"||a==="video"||a==="edit"){
+  triggerFileInput();
+ } else if(a==="search") {
+  openMusicSearch();
+ } else if(a==="music-back"){
+  closeMusicSearch();
+ } else if(a==="search-category"){
+  searchOnlineMusic(btn.dataset.query);
+ } else if(a==="history"){
+  showHistory();
+ } else if(a==="projects"){
+  showingAll=true;
+  renderProjects();
+  $("#projects-heading").textContent="All Saved Projects";
+ } else if(a==="templates"){
+  showTemplates();
+ } else if(a==="me"){
+  showMe();
+ }
+});
+
+$("#search-btn")?.addEventListener("click", openMusicSearch);
+
+$("#music-search-form").addEventListener("submit",e=>{
+ e.preventDefault();
+ searchOnlineMusic($("#music-search-input").value);
+});
+$("#music-search-input").addEventListener("keydown",e=>{
+ if(e.key==="Escape")closeMusicSearch();
+});
+
+renderProjects();
+</script>
+</body>
+</html>
